@@ -1,0 +1,50 @@
+body {
+    background-color: azure;
+    font-family:freemono, monospace;
+ 	font-size:100%;
+}
+h1 {
+	color: navy;
+	text-align: center;
+}
+h2 {
+	color:  #4CAF50;
+	text-align: center;
+}
+h3 {
+	color:  #4CAF50;
+	text-align: center;
+}
+input[type=text] {
+	background-color: white;
+    color: black;
+   
+}
+input[type=number] {
+	background-color: white;
+    color: black;
+    
+}
+button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 15px;
+    margin-left: 50%;
+    position: element(input[type=number]);
+  
+}
+img {
+	display: block;
+	margin: auto;
+	
+}
+#actors {
+	color: navy;
+	margin-left: 5%;
+
+}
