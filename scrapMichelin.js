@@ -5,18 +5,21 @@ var cheerio = require('cheerio');
 var app     = express();
 
 
+
 //var result = 'nada';
 var i;
-var listUrl = [];   
-
-        
+var j;
+var listRestauMich = []; 
+var listAdressMich = [];
+var json = [];
 //for(i=1;i<3;i++)
 //{
 
 function titleRestau(){
     return new Promise((resolve, reject) => {
-       // url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-'+i;
-        url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-2';
+        for(i=0;i<35;i++){
+        url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-'+i;
+        //url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-2';
         request(url, function(error, response, html){
 
         // First we'll check to make sure no errors occurred when making the request
@@ -24,34 +27,38 @@ function titleRestau(){
         if(!error){
 
             var title;
-            var link;
+            var listUrl = [];
+            var link = 'https://restaurant.michelin.fr';
             var $ = cheerio.load(html);
-            var json = { title : ""}; 
+            
 
             $('.poi_card-display-title').each(function(){
                 var data = $(this);
-                title = data.text();
-                //result.push(title);
-                result= 'skuuh';
-                //result = title;
-                console.log(title);
+                
+                listRestauMich.push(data.text());
+                
             });
-            resolve(title);
+            resolve(listUrl);
+        }
             
             
         
-        }
+        
         });
+    }
     });
 }
 
 
-function linkRestau(){
+function linkRestau(listUrl){
     return new Promise((resolve, reject) => {
-       // url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-'+i;
-        url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-2';
+        setTimeout(function() {
+        //var urlTemp;
+        for(i=0;i<35;i++){
+        url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-'+i;
+        //url = 'https://restaurant.michelin.fr/restaurants/france/restaurants-1-etoile-michelin/restaurants-2-etoiles-michelin/restaurants-3-etoiles-michelin/page-2';
         request(url, function(error, response, html){
-
+         
         // First we'll check to make sure no errors occurred when making the request
 
         if(!error){
@@ -63,84 +70,74 @@ function linkRestau(){
             
             $('.poi-card-link').each(function(){
                 var data = $(this);
-                link = data.attr('href');
+                var link = 'https://restaurant.michelin.fr'+data.attr('href');
+                            
+                listUrl.push(link);
                 
-                var urlTemp = "https://restaurant.michelin.fr"+link;             
-                listUrl.push(urlTemp);
-
             });
             
             resolve(listUrl);
         }
         else{
-            console.log('error');
+            console.log(error);
         }
         });
+        }
+        },1000);
+        
     });
 }
-var j=0;
-function adressRestau(listU){
+
+
+function adressRestau(listUrl){
     return new Promise((resolve, reject) => {
-        for(j=1;j<listU.length;j++){
-            url = listU[i];
-            console.log(listU[i]);
-               
+    setTimeout(function() {
+       for(j=1;j<listUrl.length;j++){
+            url = listUrl[j];
+            //console.log(content[i]);
             request(url, function(error, response, html){
 
             // First we'll check to make sure no errors occurred when making the request
             
             if(!error){
-
-                
-                var $ = cheerio.load(html);
-                
-
-
                 
                 var adresse;
                 var $ = cheerio.load(html);
-                $('.postal-code').each(function(){
+                $('.postal-code').first().each(function(){
                     var data2 = $(this);
                     adresse = data2.text();
-                    console.log(adresse);
+                    listAdressMich.push(adresse);
                 });
-            
+                resolve(adresse);
+            }
+            else{
+                console.log(error);
             }
             });
         }
+    },2000);
     });
-    
+}
+
+var listRestauLafou = [];
+var listRestauReduction = [];
+
+
+
+
+function createJson(listName,listAdress){
+    setTimeout(function() {
+    for(i=0;i<listName.length;i++){
+        json.push({'title' : listName[i], 'adress': listAdress[i]});
+    }
+    console.log(json);
+    var dictString = JSON.stringify(json);
+    fs.writeFile("listeDeRestaurants.json", dictString);
+    //console.log(listName[20]);
+    }, 10000);
 
 }
 
 
 
-titleRestau()
-.then(linkRestau)
-.then(adressRestau)
-
-
-    // The structure of our request call
-    // The first parameter is our URL
-    // The callback function takes 3 parameters, an error, response status code and the html
-    
-   
-    /*
-    url = url2;
-    request(url, function(error2, response2, html2){
-                    if(!error2){
-
-                        var adresse;
-                        var $ = cheerio.load(html);
-                        $('.postal-code').each(function(){
-                            var data2 = $(this);
-                            adresse = data2.text();
-                            console.log(adresse);
-                        });
-
-                    }
-
-                })
-                */
-
-
+titleRestau().then(linkRestau).then(adressRestau).then(createJson(listRestauMich,listAdressMich));
